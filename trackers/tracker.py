@@ -1,7 +1,7 @@
-from trackers.deep_sort.parser import get_config
-from trackers.deep_sort.deep_sort import DeepSort
+from .deep_sort.parser import get_config
+from .deep_sort.deep_sort import DeepSort
 
-from trackers.sort import Sort
+from .sort import Sort
 import os
 
 supported = ['deepsort', 'sort']

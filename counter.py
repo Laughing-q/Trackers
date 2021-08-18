@@ -1,6 +1,47 @@
 from easydict import EasyDict as edict
+from PIL import Image, ImageFont, ImageDraw
 import cv2
 import math
+import numpy as np
+import time
+
+def vertical_line(p1, p2):
+    """
+    Parameters
+    ----------
+    p1：判定线起始点, xy
+    p2：判定线结束点, xy
+
+    Returns
+    -------
+    画箭头的起始/结束坐标，和标志(out)
+    """
+    sign = ''
+    if (np.array(list(p1) + list(p2)) == 0).all():
+        return (0, 0), (0, 0), ''
+    try:
+        w, h = (p2[0] - p1[0]), (p2[1] - p1[1])
+        # 找出判定线的中点与1/3的点，再基于中点对1/3的点方向 做顺时针旋转90度来指明out的方向
+        p1_k = p1[0] + w / 2, p1[1] + h / 2
+        p_v = p1[0] + w / 2.5, p1[1] + h / 2.5
+        # p_v = p1[0] + w / 2 - 50, p1[1] + h / 2 - 50
+        """
+        基于数学中xy轴  逆时针旋转点公式修改;
+        由于基于图像的坐标和数学中xy坐标不一致，y轴是反的；
+        所以下面对应旋转之后的y坐标更改为(p1_k[1] - ..), 原公式为(p1_k[1] + ..)；
+        且由于y轴反了，旋转角度也是反的，所以下面实则实现的是顺时针的旋转90度；
+        """
+        p2_k = (p1_k[0] + (p_v[0] - p1_k[0]) * math.cos(math.pi / 2) -
+                (p_v[1] - p1_k[1]) * math.sin(math.pi / 2),
+                p1_k[1] - ((p_v[1] - p1_k[1]) * math.cos(math.pi / 2) -
+                           (p_v[0] - p1_k[0]) * math.sin(math.pi / 2)))
+        if vLineAngle((p1, p2), (p1_k, p2_k)) > 180:
+            sign = '出'
+        else:
+            sign = '进'
+        return np.int64(p1_k), np.int64(p2_k), sign
+    except:
+        return (0, 0), (0, 0), ''
 
 def ccw(A, B, C):
     return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
@@ -64,49 +105,86 @@ def point2LineDistance(point, line, abs=False):
 
 
 class OneLine:
-    def __init__(self):
+    def __init__(self, lineStat, pixel=10):
         self.frameObject = {}
         self.entryCnt = 0
-        self.exirCnt = 0
+        self.exitCnt = 0
+        self.pixel = pixel
+        self.lineStat = lineStat
 
     def add_obj(self, id, pt):
-        self.frameObject[id] = edict({
-            'trackpoints': [pt],
-        })
+        if id not in self.frameObject.keys():
+            self.frameObject[id] = edict({
+                'trackpoints': [pt],
+            })
 
-    def parse_obj(self, id, pt, lineStat):
+    def parse_obj(self, id, pt, frame):
         hisPoints = self.frameObject[id].trackpoints
         if len(hisPoints) > 40:
             del hisPoints[0]
         hisPoints.append(pt)
-        if not (len(hisPoints) > 3 and getPointLen(hisPoints[0], hisPoints[-1]) > 10):
+
+        if len(hisPoints) > 50:  # 轨迹保留最大个数50
+            del hisPoints[0]
+
+        if not (len(hisPoints) > 3 and getPointLen(hisPoints[0], hisPoints[-1]) > self.pixel):
             return 
         p1, p2 = hisPoints[-1], hisPoints[-4]
-        for i in range(len(lineStat)):
-            sd = point2LineDistance(p1, lineStat[i])
-            ed = point2LineDistance(p2, lineStat[i])
+        # for visual test
+        cv2.line(frame, p1, p2, (255, 0, 0), 5)
+        for i in range(len(self.lineStat)):
+            sd = point2LineDistance(p1, self.lineStat[i])
+            ed = point2LineDistance(p2, self.lineStat[i])
             if sd * ed < 0 and intersect(
-                    p1, p2, lineStat[i][0],
-                    lineStat[i][1]):
-                ang = vLineAngle([p1, p2], lineStat[i])
+                    p1, p2, self.lineStat[i][0],
+                    self.lineStat[i][1]):
+                ang = vLineAngle([p1, p2], self.lineStat[i])
                 if ang < 180:
                     self.entryCnt += 1
                 else:
                     self.exitCnt += 1
                 hisPoints.clear()
-            elif sd * ed > 0 and abs(sd) > 80 and abs(
-                    ed) > 80 and len(
-                        hisPoints) > 20:  # 离线比较远时清除旧数据
-                for j in range(0, 20):
-                    del hisPoints[0]
+            # elif sd * ed > 0 and abs(sd) > 80 and abs(
+            #         ed) > 80 and len(
+            #             hisPoints) > 20:  # 离线比较远时清除旧数据
+            #     for j in range(0, 20):
+            #         del hisPoints[0]
 
-
-    def plot_line(self, id, frame):
+    def plot_tail(self, id, frame):
         num_points = len(self.frameObject[id].trackpoints)
         plotPoints = self.frameObject[id].trackpoints[-min(20, num_points):]
         for i, pt in enumerate(plotPoints):
             cv2.line(frame, pt, plotPoints[max(i - 1, 0)], (0, 0, 255), 2)
 
+    def show_count(self, frame):
+        im = Image.fromarray(frame)
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype("/usr/share/fonts/truetype/arphic/ukai.ttc", size=40)
+        draw.text((50, 100), f"进入:{self.entryCnt}", fill=(0, 255, 0), font=font)
+        draw.text((50, 150), f"出去:{self.exitCnt}", fill=(0, 255, 0), font=font)
+        # draw.text((50, 150), f"总计:{entryCnt}", fill=(0, 0, 255), font=font)
+        frame = np.array(im)
+        return frame
+
+    def plot_line(self, frame):
+        # st = time.time()
+        im = Image.fromarray(frame)
+        draw = ImageDraw.Draw(im)
+        font = ImageFont.truetype("/usr/share/fonts/truetype/arphic/ukai.ttc", size=30)
+        # print("transfor time:", time.time() - st)
+        for i in range(len(self.lineStat)):
+            p1_1, p1_2, s1 = vertical_line(self.lineStat[i][0],
+                                           self.lineStat[i][1])
+            draw.text(tuple(p1_2), s1, fill=(0, 0, 255), font=font)
+            frame = np.array(im)
+            cv2.line(frame, self.lineStat[i][0], self.lineStat[i][1],
+                     (100, 230, 255), 2)
+            cv2.arrowedLine(frame,
+                            tuple(p1_1),
+                            tuple(p1_2),
+                            color=(0, 200, 255),
+                            thickness=2)
+        return frame
 
 class TwoLine:
     def __init__(self):
