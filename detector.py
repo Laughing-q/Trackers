@@ -26,13 +26,13 @@ class Yolov5:
         self.device = select_device(device)
         self.half = True
         # path aware
-        # self.model = attempt_load(self.weights, map_location=self.device)
+        self.model = attempt_load(self.weights, map_location=self.device)
         # pt -> pth, path agnostic
-        self.model = torch.load(self.weights, map_location=self.device)['model']
-        with open(weight_path.replace('.pt', '.yaml'), 'w') as f:
-            yaml.safe_dump(self.model.yaml, f, sort_keys=False)
-        torch.save(self.model.float().state_dict(), weight_path.replace('.pt', '.pth'))
-        self.model.float().fuse().eval()
+        # self.model = torch.load(self.weights, map_location=self.device)['model']
+        # with open(weight_path.replace('.pt', '.yaml'), 'w') as f:
+        #     yaml.safe_dump(self.model.yaml, f, sort_keys=False)
+        # torch.save(self.model.float().state_dict(), weight_path.replace('.pt', '.pth'))
+        # self.model.float().fuse().eval()
 
         if self.half:
             self.model.half()  # to FP16

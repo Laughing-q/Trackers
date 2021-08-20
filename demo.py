@@ -2,9 +2,13 @@ from detector import Yolov5
 import cv2
 from trackers.deep_sort.parser import get_config
 from trackers.deep_sort.deep_sort import DeepSort
+from kalmaUpdate import StablePoint
 from yolov5.utils.plots import plot_one_box
 from trackers import ObjectTracker
 from counter import OneLine
+import os
+import os.path as osp
+import numpy as np
 
 
 if __name__ == '__main__':
@@ -17,11 +21,30 @@ if __name__ == '__main__':
     num_lines = 1
     lineStat = []
 
+    save = True  # 是否保存视频
+    save_dir = './test'  # 保存视频路径
+    os.makedirs(save_dir, exist_ok=True)
+
     # tracker = ObjectTracker('deepsort')
     tracker = ObjectTracker('sort')
+    stable_point = StablePoint()
     # for video
     pause = True
-    cap = cv2.VideoCapture('/d/projects/tensorrtx-2.0n/yolov5/test.mp4')
+    test_video = '/e/datasets/贵阳银行/贵州农信/yas_0814_door1.mp4'
+    cap = cv2.VideoCapture(test_video)
+
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    # print(fps)
+    fourcc = 'mp4v'
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    vid_writer = cv2.VideoWriter(
+        os.path.join(save_dir,
+                     test_video.split(os.sep)[-1]),
+        cv2.VideoWriter_fourcc(*fourcc), fps if fps <= 30 else 25,
+        (w, h)) if save else None
+
     frame_num = 0
     cv2.namedWindow('p', cv2.WINDOW_NORMAL)
     while cap.isOpened():
@@ -60,6 +83,22 @@ if __name__ == '__main__':
         #                                   ori_img=img_raw,)
         tracks = tracker.update(dets=box, cls=cls)
 
+        # ids = np.array(tracks[:, 4])
+        # boxes = np.array(tracks[:, :4])
+        # if len(boxes):
+        #     x1, y1, x2, y2 = boxes.T
+        #     w, h = x2 - x1, y2 - y1
+        #
+        #     points = np.stack([(x2 + x1) / 2, y1 + 5 * h], axis=1)
+        #
+        #     out = stable_point.update(ids=ids, points=points)
+        #     points = out[:, :2]
+        #     ids = out[:, 2]
+        #
+        # for ib, id in enumerate(ids):
+        #     pt = tuple([int(p) for p in points[ib]])
+        #     box = tracks[id]
+
         for i, track in enumerate(tracks):
             # 行人检测框
             box = [int(b) for b in track[:4]]
@@ -79,6 +118,9 @@ if __name__ == '__main__':
 
         img_raw = Counter.plot_line(img_raw)
         img_raw = Counter.show_count(img_raw)
+
+        if vid_writer is not None:
+            vid_writer.write(frame)
 
         cv2.imshow('p', img_raw)
         key = cv2.waitKey(0 if pause else 1)
