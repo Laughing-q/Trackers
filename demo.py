@@ -30,7 +30,7 @@ if __name__ == '__main__':
     stable_point = StablePoint()
     # for video
     pause = True
-    test_video = '/e/datasets/贵阳银行/贵州农信/yas_0814_door1.mp4'
+    test_video = '/d/projects/YOLOV5Tracker/test.mp4'
     cap = cv2.VideoCapture(test_video)
 
     fps = cap.get(cv2.CAP_PROP_FPS)
