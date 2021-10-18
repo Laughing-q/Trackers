@@ -55,19 +55,14 @@ if __name__ == '__main__':
         if frame_num == 1:
             frame_ = frame.copy()
             for j in range(num_lines):
-                roi1 = []
-                for i in range(2):
-                    roi1.append(
-                        cv2.selectROI(windowName="roi",
-                                      img=frame_,
-                                      showCrosshair=False,
-                                      fromCenter=False))
-                xr2, yr2, wr2, hr2 = roi1[0][0], roi1[0][1], roi1[1][
-                    0], roi1[1][1]
-                line = [(xr2, yr2), (wr2, hr2)]
-                # line = [(xr2 - xr1, yr2 - yr1), (wr2 - xr1, hr2 - yr1)]
+                rois = cv2.selectROIs('roi', frame, False, False)  # xywh
+                # print(rois)
+                assert len(rois) == 2
+                
+                x1, y1 = rois[0][:2]
+                x2, y2 = rois[1][:2]
+                line = [(x1, y1), (x2, y2)]
                 lineStat.append(line)
-                # pt.entryExitStat[j].line = line
                 cv2.line(frame_, line[0], line[1], (255, 0, 100), 2)
             cv2.destroyWindow('roi')
             Counter = OneLine(lineStat=lineStat, pixel=10)
@@ -116,6 +111,7 @@ if __name__ == '__main__':
             Counter.plot_tail(id, img_raw)
             Counter.parse_obj(id, pt, img_raw)
 
+        # TODO
         img_raw = Counter.plot_line(img_raw)
         img_raw = Counter.show_count(img_raw)
 

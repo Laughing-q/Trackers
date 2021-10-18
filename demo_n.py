@@ -19,9 +19,6 @@ if __name__ == "__main__":
     detector.show = False if Track else True
     detector.pause = False
 
-    num_lines = 1
-    lineStat = []
-
     save = True  # 是否保存视频
     save_dir = "./test"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)

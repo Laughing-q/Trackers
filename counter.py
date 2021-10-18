@@ -210,6 +210,8 @@ class TwoLine:
 
 
 class TrailParser:
+    """trace the trail and analyse"""
+
     def __init__(self):
         self.frameObject = defaultdict(list)
         self.frameTime = {}
@@ -224,6 +226,10 @@ class TrailParser:
         self.frameTime[id] = current_frame
 
     def clear_old_points(self, current_frame):
+        """clear  abandoned ids
+        Args:
+            current_frame: The current frame of the video.
+        """
         frame_nums = np.array(list(self.frameTime.values()))
         ids = np.array(list(self.frameTime.keys()))
 
@@ -235,12 +241,14 @@ class TrailParser:
             del self.frameTime[id]
 
     def plot(self, id, frame):
+        """plot"""
         num_points = len(self.frameObject[id])
         plotPoints = self.frameObject[id][-min(1000, num_points) :]
         for i, pt in enumerate(plotPoints):
             cv2.line(frame, pt, plotPoints[max(i - 1, 0)], (0, 0, 255), 2)
 
     def linesfit(self, id=None):
+        """fit the trails"""
         # trails = np.array(self.frameObject.values())
         # print(trails)
         if len(self.frameObject) == 0 or len(self.frameObject[id]) == 0:
@@ -280,6 +288,8 @@ class TrailParser:
 
 
 class Dist:
+    """calculate the distance between the tracks, chose the center point by default"""
+
     def __init__(self, bboxes, ids):
         # The `bboxes` and `ids` should correspond each other
         assert len(bboxes) == len(ids)
