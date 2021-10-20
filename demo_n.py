@@ -84,6 +84,7 @@ if __name__ == "__main__":
             trail.add_point(id, pt, frame_num)
             trail.plot(id, frame)
 
+            # TODO
             # 计算所有轨迹与该id轨迹的拟合程度
             fits, tids = trail.linesfit(id=id)
 
