@@ -91,7 +91,8 @@ if __name__ == "__main__":
             # 轨迹相似的id
             tids = tids[fits <= 0.6]
             # 距离相近的id
-            dids = dist.ids[dist.dist[i] <= 150]
+            # 取右上角的距离即可
+            dids = dist.ids[dist.dist[i] <= 150][i+1:]
             # TODO
             for ii, did in enumerate(dids):
                 if did not in tids:
