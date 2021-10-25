@@ -210,10 +210,10 @@ class Sort(object):
         self.trackers = []
         self.frame_count = 0
 
-    def update(self, dets=np.empty((0, 5)), cls=None):
+    def update(self, bboxes=np.empty((0, 5)), cls=None):
         """
         Params:
-          dets - a numpy array of detections in the format [[x1,y1,x2,y2,score],[x1,y1,x2,y2,score],...]
+          bboxes - a numpy array of detections in the format [[x1,y1,x2,y2,score],[x1,y1,x2,y2,score],...]
         Requires: this method must be called once for each frame even with empty detections (use np.empty((0, 5)) for frames without detections).
         Returns the a similar array, where the last column is the object ID.
         NOTE: The number of objects returned may differ from the number of detections provided.
@@ -231,15 +231,15 @@ class Sort(object):
         trks = np.ma.compress_rows(np.ma.masked_invalid(trks))
         for t in reversed(to_del):
             self.trackers.pop(t)
-        matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(dets, trks, self.iou_threshold)
+        matched, unmatched_dets, unmatched_trks = associate_detections_to_trackers(bboxes, trks, self.iou_threshold)
 
         # update matched trackers with assigned detections
         for m in matched:
-            self.trackers[m[1]].update(dets[m[0], :], cls[m[0]] if cls is not None else cls)
+            self.trackers[m[1]].update(bboxes[m[0], :], cls[m[0]] if cls is not None else cls)
 
         # create and initialise new trackers for unmatched detections
         for i in unmatched_dets:
-            trk = KalmanBoxTracker(dets[i, :], cls[i] if cls is not None else cls)
+            trk = KalmanBoxTracker(bboxes[i, :], cls[i] if cls is not None else cls)
             self.trackers.append(trk)
         i = len(self.trackers)
         for trk in reversed(self.trackers):

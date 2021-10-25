@@ -1,7 +1,5 @@
 import numpy as np
 from filterpy.kalman import KalmanFilter
-from collections import defaultdict
-from loguru import logger
 
 
 class KalmanUpdater(object):
@@ -45,6 +43,26 @@ class KalmanUpdater(object):
 
 
 class StablePoint(object):
+    """
+    Using KalmanFilter update points.
+
+    Example with track points:
+    ids = np.array(tracks[:, 4])
+    boxes = np.array(tracks[:, :4])
+    if len(boxes):
+        x1, y1, x2, y2 = boxes.T
+        w, h = x2 - x1, y2 - y1
+    
+        points = np.stack([(x2 + x1) / 2, y1 + 5 * h], axis=1)
+    
+        out = stable_point.update(ids=ids, points=points)
+        points = out[:, :2]
+        ids = out[:, 2]
+    
+    for ib, id in enumerate(ids):
+        pt = tuple([int(p) for p in points[ib]])
+        box = tracks[id]
+    """
     def __init__(self, max_age=3, min_hits=3):
         self.kalmans = {}
         self.max_age = max_age
@@ -79,3 +97,19 @@ class StablePoint(object):
             return np.concatenate(ret, axis=0)
         return np.empty((0, 3))
 
+# Example
+# ids = np.array(tracks[:, 4])
+# boxes = np.array(tracks[:, :4])
+# if len(boxes):
+#     x1, y1, x2, y2 = boxes.T
+#     w, h = x2 - x1, y2 - y1
+# 
+#     points = np.stack([(x2 + x1) / 2, y1 + 5 * h], axis=1)
+# 
+#     out = stable_point.update(ids=ids, points=points)
+#     points = out[:, :2]
+#     ids = out[:, 2]
+# 
+# for ib, id in enumerate(ids):
+#     pt = tuple([int(p) for p in points[ib]])
+#     box = tracks[id]

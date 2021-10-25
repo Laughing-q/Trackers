@@ -20,7 +20,7 @@ if __name__ == "__main__":
     detector.pause = False
 
     save = True  # 是否保存视频
-    save_dir = "./test"  # 保存视频路径
+    save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
     # tracker = ObjectTracker('deepsort')
@@ -62,11 +62,10 @@ if __name__ == "__main__":
         if not Track:
             continue
         box = preds[0][:, :4].cpu()
+        conf = preds[0][:, 4].cpu()
         cls = preds[0][:, 5].cpu()
-        # tracks, temp_ids = tracker.update(bbox_xyxy=box,
-        #                                   cls=cls,
-        #                                   ori_img=img_raw,)
-        tracks = tracker.update(dets=box, cls=cls)
+
+        tracks = tracker.update(bboxes=box, scores=conf, cls=cls, ori_img=img_raw)
 
         # 计算每个跟踪对象的距离,默认使用中心点
         dist = Dist(bboxes=tracks[:, :4], ids=tracks[:, 4])
@@ -92,7 +91,7 @@ if __name__ == "__main__":
             tids = tids[fits <= 0.6]
             # 距离相近的id
             # 取右上角的距离即可
-            dids = dist.ids[dist.dist[i] <= 150][i+1:]
+            dids = dist.ids[dist.dist[i] <= 150][i + 1 :]
             # TODO
             for ii, did in enumerate(dids):
                 if did not in tids:

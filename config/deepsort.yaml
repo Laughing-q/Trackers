@@ -1,0 +1,8 @@
+model_path: "./trackers/deep_sort/deep/checkpoint/ckpt.t7"
+max_dist: 0.2   # 特征向量之间的最大距离，如果小于MAX_DIST的则认为是同一个
+min_confidence: 0.3
+nms_max_overlap: 0.5
+max_iou_distance: 0.7 # 边框之间的最大iou距离阈值，iou距离=1-iou，如果两个框iou>(1-MAX_IOU_DISTANCE),则认为是同一个人
+max_age: 70
+n_init: 3
+nn_budget: 100

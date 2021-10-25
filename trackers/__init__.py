@@ -1,1 +1,1 @@
-from .tracker import ObjectTracker
+from .tracker import ObjectTracker, build_tracker
