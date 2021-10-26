@@ -168,7 +168,7 @@ class BYTETracker(object):
         self.frame_rate = frame_rate
 
         # self.det_thresh = args.track_thresh
-        print(self.track_thresh)
+        # print(self.track_thresh)
         self.det_thresh = self.track_thresh + 0.1
         self.buffer_size = int(self.frame_rate / 30.0 * self.track_buffer)
         self.max_time_lost = self.buffer_size
@@ -205,6 +205,7 @@ class BYTETracker(object):
         tracked_stracks = []  # type: list[STrack]
         for track in self.tracked_stracks:
             if not track.is_activated:
+                # `unconfiremed`是self.track_thresh < score < self.det_thresh的框
                 unconfirmed.append(track)
             else:
                 tracked_stracks.append(track)
@@ -215,6 +216,12 @@ class BYTETracker(object):
         STrack.multi_predict(strack_pool)
         dists = matching.iou_distance(strack_pool, detections)
         if not self.mot20:
+            # 由于mot20与mot17不一样，mot17是采用人的全身框作为标签(尽管有遮挡)
+            # mot20的标签不包括遮挡的部分
+            # 对于mot20的设置，有遮挡的框通常置信度更低且框变小了
+            # mot17尽管也有低置信度框，但是框一般不会变小
+            # fuse_score操作就是抑制这些置信度低但是iou匹配度高的框
+            # 避免了一些边框变小了的较低分框去影响匹配
             dists = matching.fuse_score(dists, detections)
         matches, u_track, u_detection = matching.linear_assignment(
             dists, thresh=self.match_thresh
@@ -266,6 +273,8 @@ class BYTETracker(object):
                 lost_stracks.append(track)
 
         """Deal with unconfirmed tracks, usually tracks with only one beginning frame"""
+        # 第一步未匹配到已有tracks的高分边框，
+        # 再与之前初始化的高分边框但置信度小于`self.det_thresh`的track(unconfirmed)匹配
         detections = [detections[i] for i in u_detection]
         dists = matching.iou_distance(unconfirmed, detections)
         if not self.mot20:
@@ -284,6 +293,8 @@ class BYTETracker(object):
         """ Step 4: Init new stracks"""
         for inew in u_detection:
             track = detections[inew]
+            # 初始化新的tracks的时候，如果框的置信度低于`self.det_thresh`，
+            # 则不激活，而是`unconfirmed`状态
             if track.score < self.det_thresh:
                 continue
             track.activate(self.kalman_filter, self.frame_id)

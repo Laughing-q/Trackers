@@ -22,9 +22,12 @@ if __name__ == "__main__":
     save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
-    # tracker = ObjectTracker("sort")
-    # tracker = ObjectTracker('deepsort')
-    tracker = ObjectTracker("bytetrack")
+    type = "sort"
+    # type = 'deepsort'
+    # type = 'bytetrack'
+    tracker = ObjectTracker(type=type)
+    conf_thresh = 0.2 if type == "bytetrack" else 0.4
+
     # for video
     pause = True
     test_video = "/d/projects/YOLOV5Tracker/test.mp4"
@@ -48,7 +51,8 @@ if __name__ == "__main__":
     )
 
     frame_num = 0
-    cv2.namedWindow("p", cv2.WINDOW_NORMAL)
+    if Track:
+        cv2.namedWindow("p", cv2.WINDOW_NORMAL)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -70,7 +74,9 @@ if __name__ == "__main__":
             Counter = OneLine(lineStat=lineStat, pixel=10)
 
         img, img_raw = detector.preprocess(frame, auto=True)
-        preds, _ = detector.dynamic_detect(img, [img_raw], classes=[0])
+        preds, _ = detector.dynamic_detect(
+            img, [img_raw], classes=[0], conf_threshold=conf_thresh
+        )
         if not Track:
             continue
         box = preds[0][:, :4].cpu()
@@ -108,6 +114,7 @@ if __name__ == "__main__":
 
         Counter.plot_result(img_raw)
         # img_raw = Counter.plot_result_PIL(img_raw)
+
         Counter.clear_old_points(current_frame=frame_num)
 
         if vid_writer is not None:

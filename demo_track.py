@@ -3,10 +3,6 @@ import cv2
 from yolov5.utils.plots import plot_one_box
 from trackers import ObjectTracker
 import os
-from trackers.bytetrack import BYTETracker
-
-# from tracking_utils.timer import Timer
-from easydict import EasyDict as edict
 
 
 if __name__ == "__main__":
@@ -14,7 +10,7 @@ if __name__ == "__main__":
         weight_path="./yolov5/weights/yolov5s.pt", device="0", img_hw=(640, 640)
     )
 
-    Track = True
+    Track = False
     detector.show = False if Track else True
     detector.pause = False
 
@@ -25,9 +21,11 @@ if __name__ == "__main__":
     save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
-    # tracker = ObjectTracker('deepsort')
-    # tracker = ObjectTracker("sort")
-    tracker = ObjectTracker("bytetrack")
+    type = "sort"
+    # type = 'deepsort'
+    # type = 'bytetrack'
+    tracker = ObjectTracker(type=type)
+    conf_thresh = 0.2 if type == "bytetrack" else 0.4
 
     # for video
     pause = True
@@ -52,7 +50,8 @@ if __name__ == "__main__":
     )
 
     frame_num = 0
-    cv2.namedWindow("p", cv2.WINDOW_NORMAL)
+    if Track:
+        cv2.namedWindow("p", cv2.WINDOW_NORMAL)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -60,7 +59,9 @@ if __name__ == "__main__":
         frame_num += 1
 
         img, img_raw = detector.preprocess(frame, auto=True)
-        preds, _ = detector.dynamic_detect(img, [img_raw], classes=[0])
+        preds, _ = detector.dynamic_detect(
+            img, [img_raw], classes=[0], conf_threshold=conf_thresh
+        )
         if not Track:
             continue
         box = preds[0][:, :4].cpu()

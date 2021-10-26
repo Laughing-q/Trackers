@@ -23,9 +23,13 @@ if __name__ == "__main__":
     save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
-    # tracker = ObjectTracker('deepsort')
-    tracker = ObjectTracker("sort")
+    type = "sort"
+    # type = 'deepsort'
+    # type = 'bytetrack'
+    tracker = ObjectTracker(type=type)
+    conf_thresh = 0.2 if type == "bytetrack" else 0.4
     trail = TrailParser()
+
     # for video
     pause = True
     test_video = "./test.mp4"
@@ -49,7 +53,8 @@ if __name__ == "__main__":
     )
 
     frame_num = 0
-    cv2.namedWindow("p", cv2.WINDOW_NORMAL)
+    if Track:
+        cv2.namedWindow("p", cv2.WINDOW_NORMAL)
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -57,7 +62,9 @@ if __name__ == "__main__":
         frame_num += 1
 
         img, img_raw = detector.preprocess(frame, auto=True)
-        preds, _ = detector.dynamic_detect(img, [img_raw], classes=[0])
+        preds, _ = detector.dynamic_detect(
+            img, [img_raw], classes=[0], conf_threshold=conf_thresh
+        )
 
         if not Track:
             continue

@@ -17,7 +17,7 @@ import numpy as np
 import torch
 import yaml
 
-random.seed(1)
+random.seed(0)
 
 
 class Yolov5:
@@ -91,11 +91,13 @@ class Yolov5:
                 #     pred[i] = det
                 for di, (*xyxy, conf, cls) in enumerate(reversed(det[:, :6])):
                     output[self.names[int(cls)]] += 1
-                    label = '%s %.2f' % (self.names[int(cls)], conf)
+                    # label = '%s %.2f' % (self.names[int(cls)], conf)
                     # label = '%s' % (self.names[int(cls)])
+                    label = None
+                    color = [0, 0, 255] if conf < 0.6 else self.colors[int(cls)]
                     if self.show:
                         plot_one_box(xyxy, img0s[i], label=label,
-                                     color=self.colors[int(cls)], 
+                                     color=color, 
                                      line_thickness=2)
 
         if self.show:
