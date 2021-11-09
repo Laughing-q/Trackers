@@ -10,7 +10,7 @@ if __name__ == "__main__":
         weight_path="./yolov5/weights/yolov5s.pt", device="0", img_hw=(640, 640)
     )
 
-    Track = False
+    Track = True
     detector.show = False if Track else True
     detector.pause = False
 
@@ -21,8 +21,8 @@ if __name__ == "__main__":
     save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
-    type = "sort"
-    # type = 'deepsort'
+    # type = "sort"
+    type = 'deepsort'
     # type = 'bytetrack'
     tracker = ObjectTracker(type=type)
     conf_thresh = 0.2 if type == "bytetrack" else 0.4

@@ -1,4 +1,5 @@
-model_path: "./trackers/deep_sort/deep/checkpoint/ckpt.t7"
+model_path: "./trackers/deep_sort/deep/checkpoint/ckpt_128.t7"
+feature_dim: 128
 max_dist: 0.2   # 特征向量之间的最大距离，如果小于MAX_DIST的则认为是同一个
 min_confidence: 0.3
 nms_max_overlap: 0.5

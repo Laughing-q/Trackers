@@ -4,11 +4,17 @@ import numpy as np
 import cv2
 import logging
 
-from .model import Net
+# from .model import Net
 
 
 class Extractor(object):
-    def __init__(self, model_path, use_cuda=True):
+    def __init__(self, model_path, use_cuda=True, feature_dim=128):
+        if feature_dim not in [128, 512]:
+            raise ValueError(f'expected `feature_dim` in [128, 512], but got {feature_dim}.')
+        if feature_dim == 128:
+            from .original_model import Net
+        else:
+            from .model import Net
         self.net = Net(reid=True)
         self.device = "cuda" if torch.cuda.is_available() and use_cuda else "cpu"
         state_dict = torch.load(model_path, map_location=lambda storage, loc: storage)['net_dict']
