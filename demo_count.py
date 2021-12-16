@@ -8,7 +8,7 @@ import os
 
 if __name__ == "__main__":
     detector = Yolov5(
-        weight_path="./yolov5/weights/yolov5s.pt", device="0", img_hw=(640, 640)
+        weight_path="/home/laughing/Person_Head_manager.pt", device="0", img_hw=(640, 640)
     )
 
     Track = True
@@ -22,15 +22,15 @@ if __name__ == "__main__":
     save_dir = "./output"  # 保存视频路径
     os.makedirs(save_dir, exist_ok=True)
 
-    type = "sort"
-    # type = 'deepsort'
+    # type = "sort"
+    type = 'deepsort'
     # type = 'bytetrack'
     tracker = ObjectTracker(type=type)
     conf_thresh = 0.2 if type == "bytetrack" else 0.4
 
     # for video
     pause = True
-    test_video = "/d/projects/YOLOV5Tracker/test.mp4"
+    test_video = "/d/九江/1216/balihu_keliu.mp4"
     cap = cv2.VideoCapture(test_video)
 
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
         img, img_raw = detector.preprocess(frame, auto=True)
         preds, _ = detector.dynamic_detect(
-            img, [img_raw], classes=[0], conf_threshold=conf_thresh
+            img, [img_raw], classes=None, conf_threshold=conf_thresh
         )
         if not Track:
             continue
