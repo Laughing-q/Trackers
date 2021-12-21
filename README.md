@@ -1,5 +1,13 @@
 # Trackers
 
+## Installion
+- Installation
+  ```shell
+  pip install -v -e .
+  ```
+## TODO
+- [ ] Two line Counter.
+
 ## Support
 - Track
   * Sort
@@ -7,7 +15,7 @@
     + 128
     + 512
   * ByteTrack
-- Count the person go in or out.
+- Count the person go in or out(one line for now).
 - Follow person detect.
 
 ## Usage
