@@ -1,10 +1,8 @@
 from detector import Yolov5
-import cv2
-from trackers.deep_sort.parser import get_config
-from trackers.deep_sort.deep_sort import DeepSort
 from yolov5.utils.plots import plot_one_box
-from trackers import ObjectTracker
-from counter import TrailParser, Dist
+import cv2
+from trackers.tracker import ObjectTracker
+from trackers.counter import TrailParser, Dist
 import os
 import os.path as osp
 import numpy as np

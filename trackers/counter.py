@@ -2,7 +2,7 @@ from collections import defaultdict
 from PIL import Image, ImageFont, ImageDraw
 import cv2
 import numpy as np
-from util import point2LineDistance, intersect, vertical_line, vLineAngle
+from .utils import point2LineDistance, intersect, vertical_line, vLineAngle
 
 
 class TwoLine:

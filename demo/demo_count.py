@@ -1,8 +1,8 @@
 from detector import Yolov5
-import cv2
 from yolov5.utils.plots import plot_one_box
-from trackers import ObjectTracker
-from counter import OneLine
+from trackers.counter import OneLine
+import cv2
+from trackers.tracker import ObjectTracker
 import os
 
 

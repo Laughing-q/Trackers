@@ -1,22 +1,34 @@
-from .deep_sort import DeepSort
-from .sort import Sort
-from .bytetrack import BYTETracker
+from .trackers.deep_sort import DeepSort
+from .trackers.sort import Sort
+from .trackers.bytetrack import BYTETracker
 import yaml
 import numpy as np
+import os.path as osp
+
+CONFIG_DIR = osp.join(
+    osp.abspath(osp.join(osp.dirname(__file__), osp.pardir)), "config"
+)
+
+MODEL_DIR = osp.join(
+    osp.abspath(osp.dirname(__file__)), "trackers/deep_sort/deep/checkpoint"
+)
 
 supported = ["deepsort", "sort", "bytetrack"]
+deepsort_models = {128: "ckpt_128.t7", 512: "ckpt_512.t7"}
 
 
 class ObjectTracker:
-    def __init__(self, type):
+    def __init__(self, type, config=None):
         if type not in supported:
             raise TypeError(f"expected `type` in {supported}, but got {type}")
 
-        with open(f"config/{type}.yaml", errors="ignore") as f:
+        config_file = config or osp.join(CONFIG_DIR, f"{type}.yaml")
+        with open(config_file, errors="ignore") as f:
             cfg = yaml.safe_load(f)
         if type == "deepsort":
-            self.Tracker = DeepSort(**cfg)
-            self.args = ["bboxes", "ori_img", 'cls']
+            model_path = osp.join(MODEL_DIR, deepsort_models[(cfg["feature_dim"])])
+            self.Tracker = DeepSort(model_path=model_path, **cfg)
+            self.args = ["bboxes", "ori_img", "cls"]
 
         elif type == "bytetrack":
             self.Tracker = BYTETracker(**cfg)
@@ -43,11 +55,12 @@ class ObjectTracker:
         return tracks
 
 
-def build_tracker(type):
+def build_tracker(type, config=None):
     if type not in supported:
         raise TypeError(f"expected `type` in {supported}, but got {type}")
 
-    with open(f"config/{type}.yaml", errors="ignore") as f:
+    config_file = config or osp.join(CONFIG_DIR, f"{type}.yaml")
+    with open(config_file, errors="ignore") as f:
         cfg = yaml.safe_load(f)
     if type == "deepsort":
         Tracker = DeepSort(**cfg)

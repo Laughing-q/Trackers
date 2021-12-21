@@ -1,3 +1,5 @@
 yolov5*/
 __pycache__/
 *.mp4
+*.egg
+*.egg-info

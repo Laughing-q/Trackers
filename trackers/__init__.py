@@ -1,1 +1,1 @@
-from .tracker import ObjectTracker, build_tracker
+__version__ = "0.1.0"
