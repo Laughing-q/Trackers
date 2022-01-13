@@ -72,6 +72,12 @@ def vLineAngle(v1, v2):
         included_angle += 360
     return included_angle
 
+def getLineCenter(p1, p2):
+    x1, y1 = p1
+    x2, y2 = p2
+    x = (x1 + x2) / 2
+    y = (y1 + y2) / 2
+    return int(x), int(y)
 
 def getPointLen(p1, p2):
     """

@@ -115,7 +115,7 @@ if __name__ == "__main__":
         Counter.plot_result(img_raw)
         # img_raw = Counter.plot_result_PIL(img_raw)
 
-        Counter.clear_old_points(current_frame=frame_num)
+        Counter.clear_old_points(current_frame=frame_num, interval=100)
 
         if vid_writer is not None:
             vid_writer.write(frame)

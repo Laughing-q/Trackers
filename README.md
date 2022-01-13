@@ -6,7 +6,7 @@
   pip install -v -e .
   ```
 ## TODO
-- [ ] Two line Counter.
+- [X] Two line Counter.
 
 ## Support
 - Track
@@ -15,7 +15,7 @@
     + 128
     + 512
   * ByteTrack
-- Count the person go in or out(one line for now).
+- Count the person go in or out(one line and two line).
 - Follow person detect.
 
 ## Usage

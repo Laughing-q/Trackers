@@ -5,6 +5,7 @@ from .counter_utils import (
     ccw,
     intersect,
     vLineAngle,
+    getLineCenter,
 )
 
 from .kalmaUpdate import StablePoint
