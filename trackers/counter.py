@@ -17,13 +17,14 @@ class OneLine:
         lineStat (List[List[(x1, y1), (x2, y2)] * num_lines]): line.
     """
 
-    def __init__(self, lineStat, pixel=10, count_once=False):
+    def __init__(self, lineStat, pixel=10, count_once=False, logger=None):
         self.trailObject = TrailParser()
         self.entryCnt = 0
         self.exitCnt = 0
         self.pixel = pixel
         self.lineStat = lineStat
         self.num_lines = len(lineStat)
+        self.logger = logger
         self.countedObject = (
             [defaultdict(list) for _ in range(self.num_lines)] if count_once else None
         )
@@ -52,19 +53,21 @@ class OneLine:
                 ang = vLineAngle([p1, p2], line)
                 if ang < 180 and self._count_check(i, id, "in"):
                     self.entryCnt += 1
-                    self._count_sign(i, id, "in")
+                    self._count_sign(i, id, "in", frame_num)
                 elif ang >= 180 and self._count_check(i, id, "out"):
                     self.exitCnt += 1
-                    self._count_sign(i, id, "out")
+                    self._count_sign(i, id, "out", frame_num)
 
     def _count_check(self, i, id, sign):
         return not (
             self.countedObject is not None and sign in self.countedObject[i][id]
         )
 
-    def _count_sign(self, i, id, sign):
+    def _count_sign(self, i, id, sign, frame_num):
         if self.countedObject is not None:
             self.countedObject[i][id].append(sign)
+        if self.logger is not None:
+            self.logger.info(f"{frame_num}-{sign}")
 
     def clear_old_points(self, current_frame, interval):
         self.trailObject.clear_old_points(current_frame, interval)
@@ -149,8 +152,8 @@ class TwoLine(OneLine):
         count_once (bool): 是否同一个id只计数一次(每条线分开算的).
     """
 
-    def __init__(self, lineStat, pixel=10, count_once=False):
-        super(TwoLine, self).__init__(lineStat, pixel, count_once)
+    def __init__(self, lineStat, pixel=10, count_once=False, logger=None):
+        super(TwoLine, self).__init__(lineStat, pixel, count_once, logger)
         self.lineObject = [defaultdict(list) for _ in range(self.num_lines)]
 
     def count(self, id, pt, frame_num, frame=None):
@@ -177,12 +180,12 @@ class TwoLine(OneLine):
                     self.lineObject[i][id][-2] < self.lineObject[i][id][-1]
                 ) and self._count_check(i, id, "out"):
                     self.exitCnt += 1
-                    self._count_sign(i, id, "out")
+                    self._count_sign(i, id, "out", frame_num)
                 if (
                     self.lineObject[i][id][-2] > self.lineObject[i][id][-1]
                 ) and self._count_check(i, id, "in"):
                     self.entryCnt += 1
-                    self._count_sign(i, id, "in")
+                    self._count_sign(i, id, "in", frame_num)
                 # 计数之后清空
                 if self.lineObject[i][id][-2] != self.lineObject[i][id][-1]:
                     del self.lineObject[i][id]
