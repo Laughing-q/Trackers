@@ -295,12 +295,12 @@ class TrailParser:
             del self.frameTime[id]
         return remove_ids
 
-    def plot(self, id, frame):
+    def plot(self, id, frame, nums=20, color=(0, 0, 255)):
         """plot"""
         num_points = len(self.frameObject[id])
-        plotPoints = self.frameObject[id][-min(20, num_points) :]
+        plotPoints = self.frameObject[id][-min(nums, num_points) :]
         for i, pt in enumerate(plotPoints):
-            cv2.line(frame, pt, plotPoints[max(i - 1, 0)], (0, 0, 255), 2)
+            cv2.line(frame, pt, plotPoints[max(i - 1, 0)], color, 2)
 
     def linesfit(self, id=None):
         """fit the trails"""
